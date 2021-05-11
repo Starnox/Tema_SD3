@@ -1,0 +1,28 @@
+
+Structura de baza
+    -> Carte
+        - char *title
+        - char *author
+        - int rating
+        - int nrPag
+
+
+Functii->
+    SearchBook()
+    AddBook()
+    AutoCompleteTitle()
+    AutoCompleteAuthor()
+
+
+SIGMA -> dimensiunea alfabetului (constanta)
+
+Gestionarea cartiilor
+    structura T1 (trie) 
+        - struct T1 *sons[SIGMA] -> se retine titlul cartii;
+        - int isEnd -> marcheaza sfarsitul
+        - Carte *infoBook; ->pointer catre o carte
+
+    structra T2 (trie)
+        - struct T1 *sons[SIGMA] -> se retine numele autorului
+        - int isEnd -> marcheaza sfarsitul
+        - T1 *carti; -> pointer catre o trie de tipul T1 care contine doar cartile autorului
