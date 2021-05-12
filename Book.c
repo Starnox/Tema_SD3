@@ -35,9 +35,18 @@ BookPointer InitialiseBook(char *title, char *author, int rating, int nrPag)
     return newBook;
 }
 
-BookPointer SearchBook(char *key)
+void SearchBook(char *key, TrieNodePointer T1,  FILE *outputFile)
 {
-    return NULL;
+    BookPointer book = (BookPointer )SearchTrie(T1, key);
+
+    if(book != NULL)
+    {
+        // then the book exists
+        fprintf(outputFile, "Informatii recomandare: %s, %s, %d, %d\n",
+                book->title, book->author, book->rating, book->nrPag);
+    }
+    else
+        fprintf(outputFile, "Cartea %s nu exista in recomandarile tale.\n", key);
 }
 
 int AddBook(BookPointer toAdd)

@@ -16,5 +16,4 @@ void DeleteTrie(TrieNodePointer *trieNode, int type);
 int InsertNode(TrieNodePointer trieNode, char *key, void *endInfo); // (0/1) success
 void* SearchTrie(TrieNodePointer node, char *key);
 
-
 #endif

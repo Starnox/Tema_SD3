@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "TTrie.h"
 
 #ifndef BOOK_H
 #define BOOK_H
@@ -13,7 +14,7 @@ typedef struct book
 
 
 BookPointer InitialiseBook(char *title, char *author, int rating, int nrPag);
-BookPointer SearchBook(char *key);
+void SearchBook(char *key, TrieNodePointer T1, FILE *outputFile);
 int AddBook(BookPointer toAdd);
 char *AutoCompleteTitle(char *key);
 char *AutoCompleteAuthor(char *key);

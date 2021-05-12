@@ -65,6 +65,7 @@ void* SearchTrie(TrieNodePointer node, char *key)
     return NULL;
 }
 
+
 void DeleteTrie(TrieNodePointer *trieNode, int type)
 {
     if(*trieNode == NULL)
