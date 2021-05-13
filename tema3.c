@@ -33,6 +33,18 @@ int main(int argc, char *argv[])
     
     while(fscanf(inputFile, "%s", command) != EOF)
     {
+        if(T1 == NULL)
+        {
+            T1 = InitialiseTrieNode();
+            if(T1 == NULL)
+                return 1;
+        }
+        if(T2 == NULL)
+        {
+            T2 = InitialiseTrieNode();
+            if(T2 == NULL)
+                return 1;
+        }
         // check for each command
         if(strcmp(command, "add_book") == 0)
         {
@@ -43,6 +55,8 @@ int main(int argc, char *argv[])
                 FreeBook((void **) &newBook);
                 continue;
             }
+            
+
             InsertNode(T1, newBook->title, newBook);// insert the book
 
             // if the author is not in the T2 trie
@@ -60,7 +74,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                // the author is already in the trie
+                // the author is already in the T2 trie
                 // then we just add the book to his trie
                 InsertNode(authorTrie, newBook->title, newBook);
             }
@@ -102,8 +116,8 @@ void DeleteBook(TrieNodePointer *T1, TrieNodePointer *T2, FILE *inputFile, FILE 
     if(title[strlen(title) - 1] == '\n')
         title[strlen(title) - 1] = '\0';
 
-    // remove the book from T1 without freeing the info
-    TrieNodePointer searchBook = SearchTrie(*T1, title);
+    
+    BookPointer searchBook = (BookPointer) SearchTrie(*T1, title);
     // if the book doesnt exist
     if(searchBook == NULL)
     {
@@ -112,16 +126,23 @@ void DeleteBook(TrieNodePointer *T1, TrieNodePointer *T2, FILE *inputFile, FILE 
         return;
     }
 
-    // remove the title key from T1
-    Remove(T1, title, 0, NULL);
+    char *author = malloc(MAX_AUTHOR);
+    strcpy(author, searchBook->author);
 
+    // remove the book from T1 and free the info
+    Remove(T1, title, 0, FreeBook);
+    
     int found = 0;
-    RemoveBookFromAuthor(T2, T2, title, &found);
+    // remove the book from the authors trie
+    // and delete the author if it has no books left
+    RemoveBookFromAuthor(T2, T2, title, author ,&found);
 
+    free(author);
     free(title);
 }
 
-void RemoveBookFromAuthor(TrieNodePointer *T2, TrieNodePointer *OriginalT2, char *title, int *found)
+void RemoveBookFromAuthor(TrieNodePointer *T2, TrieNodePointer *OriginalT2, char *title,
+                             char *author,int *found)
 {
     if(*T2 == NULL)
         return;
@@ -136,22 +157,14 @@ void RemoveBookFromAuthor(TrieNodePointer *T2, TrieNodePointer *OriginalT2, char
         if(book != NULL)
         {
             *found = 1;
-            // get the author
-            char *author = (char *) malloc(MAX_AUTHOR);
-            
-            strcpy(author, book->author);
-            if(author == NULL)
-                return;
-
             // remove the book and free the info
-            Remove((TrieNodePointer *) &((*T2)->endPointer), title, 0, FreeBook);
+            Remove((TrieNodePointer *) &((*T2)->endPointer), title, 0, NULL);
 
             // if there are no more books
             if((*T2)->endPointer == NULL)
             {
                 Remove(OriginalT2, author, 0, NULL);
             }
-            free(author);
             return;
         }
     }
@@ -162,7 +175,7 @@ void RemoveBookFromAuthor(TrieNodePointer *T2, TrieNodePointer *OriginalT2, char
         // if the node exists
         if((*T2) && (*T2)->sons[i])
         {
-            RemoveBookFromAuthor(&(*T2)->sons[i], OriginalT2, title, found);
+            RemoveBookFromAuthor(&(*T2)->sons[i], OriginalT2, title, author, found);
         }
 
         if(*found == 1)

@@ -98,8 +98,13 @@ TrieNodePointer Remove(TrieNodePointer *node, char *key, int depth, FreeFunction
             *node = NULL;
         }
         if(*node != NULL && (*node)->isEnd)
+        {
+            if(freeFunc != NULL)
+            {
+                freeFunc(&((*node)->endPointer));
+            }
             (*node)->isEnd = 0;
-
+        }
         return *node;
     }
     int index = GetIndexInAlphabet(key[depth]);
