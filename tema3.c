@@ -25,8 +25,8 @@ int main(int argc, char *argv[])
     
     // this will store all the books information
     // in order to make freeing easier
-    BookPointer allBooksInfo[NR_MAX_BOOKS];
-    int nrBooks = 0; // this will hold the number of books
+    //BookPointer allBooksInfo[NR_MAX_BOOKS];
+    //int nrBooks = 0; // this will hold the number of books
 
     char command[150];
     
@@ -37,7 +37,12 @@ int main(int argc, char *argv[])
         if(strcmp(command, "add_book") == 0)
         {
             BookPointer newBook = ReadBook(inputFile);// read it
-            allBooksInfo[nrBooks++] = newBook; // add to the pool of books
+            if(SearchTrie(T1, newBook->title) != NULL)
+            {
+                // the book already exists
+                FreeBook((void **) &newBook);
+                continue;
+            }
             InsertNode(T1, newBook->title, newBook);// insert the book
 
             // if the author is not in the T2 trie
@@ -72,15 +77,97 @@ int main(int argc, char *argv[])
         {
             SearchByAuthor(T2, inputFile, outputFile);
         }
+        else if(strcmp(command, "delete_book") == 0)
+        {
+            DeleteBook(&T1, &T2, inputFile, outputFile);
+        }
     }
     
-    FreeAllBooks(allBooksInfo, nrBooks);
-    DeleteTrie(&T1, 1);
-    DeleteTrie(&T2, 2);
+    //FreeAllBooks(allBooksInfo, nrBooks);
+    DeleteTrie(&T1, 1, FreeBook);
+    DeleteTrie(&T2, 2, NULL);
     fclose(inputFile);
     fclose(outputFile);
 
     return 0;
+}
+
+void DeleteBook(TrieNodePointer *T1, TrieNodePointer *T2, FILE *inputFile, FILE *outputFile)
+{
+    fgetc(inputFile); // get the space
+    char *title = NULL;
+    size_t length;
+
+    getline(&title, &length, inputFile); // get the name
+    if(title[strlen(title) - 1] == '\n')
+        title[strlen(title) - 1] = '\0';
+
+    // remove the book from T1 without freeing the info
+    TrieNodePointer searchBook = SearchTrie(*T1, title);
+    // if the book doesnt exist
+    if(searchBook == NULL)
+    {
+        fprintf(outputFile, "Cartea %s nu exista in recomandarile tale.\n", title);
+        free(title);
+        return;
+    }
+
+    // remove the title key from T1
+    Remove(T1, title, 0, NULL);
+
+    int found = 0;
+    RemoveBookFromAuthor(T2, T2, title, &found);
+
+    free(title);
+}
+
+void RemoveBookFromAuthor(TrieNodePointer *T2, TrieNodePointer *OriginalT2, char *title, int *found)
+{
+    if(*T2 == NULL)
+        return;
+    if((*T2)->isEnd && (*T2)->endPointer != NULL)
+    {
+        // we found the pointer to the books
+
+        // search for the book
+        BookPointer book = (BookPointer) SearchTrie((*T2)->endPointer, title);
+
+        // if it exits
+        if(book != NULL)
+        {
+            *found = 1;
+            // get the author
+            char *author = (char *) malloc(MAX_AUTHOR);
+            
+            strcpy(author, book->author);
+            if(author == NULL)
+                return;
+
+            // remove the book and free the info
+            Remove((TrieNodePointer *) &((*T2)->endPointer), title, 0, FreeBook);
+
+            // if there are no more books
+            if((*T2)->endPointer == NULL)
+            {
+                Remove(OriginalT2, author, 0, NULL);
+            }
+            free(author);
+            return;
+        }
+    }
+
+    int i;
+    for(i = 0; i< SIGMA; ++i)
+    {
+        // if the node exists
+        if((*T2) && (*T2)->sons[i])
+        {
+            RemoveBookFromAuthor(&(*T2)->sons[i], OriginalT2, title, found);
+        }
+
+        if(*found == 1)
+            return;
+    }
 }
 
 void ListAuthor(TrieNodePointer T2, FILE *inputFile, FILE *outputFile)
@@ -251,6 +338,8 @@ BookPointer ReadBook(FILE *inputFile)
 
 void AutoCompleteBooks(TrieNodePointer node, char *key, FILE *outputFile)
 {
+    if(node == NULL)
+        return;
     TrieNodePointer pointerCrawl = node;
 
     int i;
@@ -274,6 +363,8 @@ void AutoCompleteBooks(TrieNodePointer node, char *key, FILE *outputFile)
 
 void AutoCompleteAuthors(TrieNodePointer node, char *key, FILE *outputFile)
 {
+    if(node == NULL)
+        return;
     TrieNodePointer pointerCrawl = node;
 
     int i;

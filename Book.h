@@ -19,7 +19,7 @@ int AddBook(BookPointer toAdd);
 char *AutoCompleteTitle(char *key);
 char *AutoCompleteAuthor(char *key);
 
-void FreeBook(BookPointer *book);
+void FreeBook(void **info);
 void FreeAllBooks(BookPointer *books, int nrElem);
 
 #endif

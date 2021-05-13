@@ -14,3 +14,6 @@ void SearchBookMain(TrieNodePointer T1, FILE *inputFile, FILE *outputFile);
 void AutoCompleteBooks(TrieNodePointer node, char *key, FILE *outputFile);
 void AutoCompleteAuthors(TrieNodePointer node, char *key, FILE *outputFile);
 void ListAuthor(TrieNodePointer T2, FILE *inputFile, FILE *outputFile);
+
+void DeleteBook(TrieNodePointer *T1, TrieNodePointer *T2, FILE *inputFile, FILE *outputFile);
+void RemoveBookFromAuthor(TrieNodePointer *T2, TrieNodePointer *OriginalT2, char *title, int *found);

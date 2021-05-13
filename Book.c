@@ -64,11 +64,12 @@ char *AutoCompleteAuthor(char *key)
     return NULL;
 }
 
-void FreeBook(BookPointer *book)
+void FreeBook(void **info)
 {
-    free((*book)->author);
-    free((*book)->title);
-    free(*book);
+    BookPointer book = (BookPointer ) (*info);
+    free(book->author);
+    free(book->title);
+    free(*info);
 }
 
 void FreeAllBooks(BookPointer *books, int nrElem)
@@ -76,6 +77,7 @@ void FreeAllBooks(BookPointer *books, int nrElem)
     int i;
     for(i = 0; i < nrElem; ++i)
     {
-        FreeBook(&(books[i]));
+        if(books[i] != NULL)
+            FreeBook((void **) &(books[i]));
     }
 }
