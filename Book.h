@@ -15,10 +15,6 @@ typedef struct book
 
 BookPointer InitialiseBook(char *title, char *author, int rating, int nrPag);
 void SearchBook(char *key, TrieNodePointer T1, FILE *outputFile);
-int AddBook(BookPointer toAdd);
-char *AutoCompleteTitle(char *key);
-char *AutoCompleteAuthor(char *key);
-
 void FreeBook(void **info);
 void FreeAllBooks(BookPointer *books, int nrElem);
 

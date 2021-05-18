@@ -5,12 +5,14 @@ TrieNodePointer InitialiseTrieNode()
     // alloc memory
     TrieNodePointer newNode = (TrieNodePointer) malloc(sizeof(TrieNode));
 
+    // verification
     if(newNode == NULL)
     {
         printf("Alocare esuata");
         return NULL;
     }
 
+    // initialisation
     newNode->isEnd = 0;
     newNode->endPointer = NULL;
 
@@ -23,25 +25,32 @@ TrieNodePointer InitialiseTrieNode()
 
 int InsertNode(TrieNodePointer trieNode, char *key, void *endInfo)
 {
+    // verification
     if(trieNode == NULL)
         return 0;
+
     TrieNodePointer pointerCrawl = trieNode;
 
     int i;
 
     for(i = 0; i < strlen(key); ++i)
     {
+        // get the index
         int currIndex = GetIndexInAlphabet(key[i]);
+
         if(pointerCrawl == NULL)
-            return 0;
+            return 0; // failure
 
         // if the child doesn't exist we create it
         if(!pointerCrawl->sons[currIndex])
             pointerCrawl->sons[currIndex] = InitialiseTrieNode();
 
+        // we advance the crawler
         pointerCrawl = pointerCrawl->sons[currIndex];
     }
 
+
+    // set the data in the final node
     pointerCrawl->isEnd = 1;
     pointerCrawl->endPointer = endInfo;
     return 1;
@@ -65,6 +74,8 @@ void* SearchTrie(TrieNodePointer node, char *key)
 
         pointerCrawl = pointerCrawl->sons[currIndex];
     }
+
+    // return the info in the end pointer
     if(pointerCrawl != NULL && pointerCrawl->isEnd)
         return pointerCrawl->endPointer;
     return NULL;
@@ -91,18 +102,22 @@ TrieNodePointer Remove(TrieNodePointer *node, char *key, int depth, FreeFunction
     // if it is the last character of the key
     if(depth == strlen(key))
     {
-        // if is no prefix to any other word
+        // if the node is not the prefix to any other key
         if(IsEmpty(*node))
         {
             DeleteTrie(node, 1, freeFunc);
             *node = NULL;
         }
+
+        // if it is the end of a key
         if(*node != NULL && (*node)->isEnd)
         {
+            // if we want to free the information
             if(freeFunc != NULL)
             {
                 freeFunc(&((*node)->endPointer));
             }
+            // the node is no more the end of a key
             (*node)->isEnd = 0;
         }
         return *node;
@@ -130,7 +145,7 @@ void DeleteTrie(TrieNodePointer *trieNode, int type, FreeFunction freeFunc)
 
     if((*trieNode)->isEnd)// if it is end of word
     {
-        // if it is of type T1
+        // if it is of type T2
         if(type == 2)
         {
             // then delete the type 1 trie associated with it
@@ -138,7 +153,7 @@ void DeleteTrie(TrieNodePointer *trieNode, int type, FreeFunction freeFunc)
         }
         else
         {
-            if(freeFunc != NULL)
+            if(freeFunc != NULL) // if we want to free the info
                 freeFunc(&((*trieNode)->endPointer));
         }
 

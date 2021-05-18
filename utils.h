@@ -4,10 +4,8 @@
 
 #define SIGMA 68
 #define ALPHABET "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-'?! "
-#define MAXL 200
 #define MAX_BOOK 55
 #define MAX_AUTHOR 45
-#define NR_MAX_BOOKS 2500
 
 #ifndef UTILS_H
 #define UTILS_H

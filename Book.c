@@ -49,21 +49,6 @@ void SearchBook(char *key, TrieNodePointer T1,  FILE *outputFile)
         fprintf(outputFile, "Cartea %s nu exista in recomandarile tale.\n", key);
 }
 
-int AddBook(BookPointer toAdd)
-{
-    return 0;
-}
-
-char *AutoCompleteTitle(char *key)
-{
-    return NULL;
-}
-
-char *AutoCompleteAuthor(char *key)
-{
-    return NULL;
-}
-
 void FreeBook(void **info)
 {
     BookPointer book = (BookPointer ) (*info);

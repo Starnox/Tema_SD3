@@ -8,31 +8,33 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // open up the files
     FILE *inputFile = fopen(argv[1], "r");
     FILE *outputFile = fopen(argv[2], "w");
 
+    // declare my variables
     TrieNodePointer T1 = NULL, T2 = NULL;
 
     
+    // initialise them
     T1 = InitialiseTrieNode();
     T2 = InitialiseTrieNode();
+
+    // verification
     if(T1 == NULL || T2 == NULL) // if the init fails
     {
         fclose(inputFile);
         fclose(outputFile);
         return 1;
     }  
-    
-    // this will store all the books information
-    // in order to make freeing easier
-    //BookPointer allBooksInfo[NR_MAX_BOOKS];
-    //int nrBooks = 0; // this will hold the number of books
+
 
     char command[150];
     
-    
+    // reading the input
     while(fscanf(inputFile, "%s", command) != EOF)
     {
+        // in case we deleted the whole variable and we need to reinitialise
         if(T1 == NULL)
         {
             T1 = InitialiseTrieNode();
@@ -97,7 +99,6 @@ int main(int argc, char *argv[])
         }
     }
     
-    //FreeAllBooks(allBooksInfo, nrBooks);
     DeleteTrie(&T1, 1, FreeBook);
     DeleteTrie(&T2, 2, NULL);
     fclose(inputFile);
@@ -132,54 +133,29 @@ void DeleteBook(TrieNodePointer *T1, TrieNodePointer *T2, FILE *inputFile, FILE 
     // remove the book from T1 and free the info
     Remove(T1, title, 0, FreeBook);
     
-    int found = 0;
     // remove the book from the authors trie
     // and delete the author if it has no books left
-    RemoveBookFromAuthor(T2, T2, title, author ,&found);
+    RemoveBookFromAuthor(T2, title, author);
 
     free(author);
     free(title);
 }
 
-void RemoveBookFromAuthor(TrieNodePointer *T2, TrieNodePointer *OriginalT2, char *title,
-                             char *author,int *found)
+void RemoveBookFromAuthor(TrieNodePointer *T2, char *title, char *author)
 {
-    if(*T2 == NULL)
-        return;
-    if((*T2)->isEnd && (*T2)->endPointer != NULL)
+
+    // get the author trie with books
+    TrieNodePointer authorTrie = (TrieNodePointer) SearchTrie(*T2, author);
+
+    // remove the specified book without freeing the info (NULL)
+    // as it has already been destroyed
+    Remove((TrieNodePointer *) &authorTrie, title, 0, NULL);
+
+    // if there are no more books
+    // then destroy the authors key from T2
+    if(authorTrie == NULL)
     {
-        // we found the pointer to the books
-
-        // search for the book
-        BookPointer book = (BookPointer) SearchTrie((*T2)->endPointer, title);
-
-        // if it exits
-        if(book != NULL)
-        {
-            *found = 1;
-            // remove the book and free the info
-            Remove((TrieNodePointer *) &((*T2)->endPointer), title, 0, NULL);
-
-            // if there are no more books
-            if((*T2)->endPointer == NULL)
-            {
-                Remove(OriginalT2, author, 0, NULL);
-            }
-            return;
-        }
-    }
-
-    int i;
-    for(i = 0; i< SIGMA; ++i)
-    {
-        // if the node exists
-        if((*T2) && (*T2)->sons[i])
-        {
-            RemoveBookFromAuthor(&(*T2)->sons[i], OriginalT2, title, author, found);
-        }
-
-        if(*found == 1)
-            return;
+        Remove(T2, author, 0, NULL);
     }
 }
 
@@ -196,22 +172,28 @@ void ListAuthor(TrieNodePointer T2, FILE *inputFile, FILE *outputFile)
     if(authorName[strlen(authorName) - 1] == '~')
     {
         // need to autocomplete
+
         // delete the ~
         authorName[strlen(authorName) - 1] = '\0';
         AutoCompleteAuthors(T2, authorName, outputFile);
     }
     else
     {
-        TrieNodePointer currentBooks = SearchTrie(T2, authorName);
+        // no need to autocomplete
+
+        // get the authors book trie
+        TrieNodePointer currentBooks =  (TrieNodePointer) SearchTrie(T2, authorName);
 
         // if the author exists in the trie
         if(currentBooks != NULL)
         {
+            // we display his books
             DisplayBooksByAuthor(currentBooks, outputFile);
         }
         else
             fprintf(outputFile,"Autorul %s nu face parte din recomandarile tale.\n", authorName);
     }
+    // free the memory
     free(authorName);
 }
 
@@ -220,7 +202,7 @@ void DisplayBooksByAuthor(TrieNodePointer trie, FILE *outputile)
 {
     if(trie == NULL)
         return;
-    if(trie->isEnd)
+    if(trie->isEnd) // we found the book
         fprintf(outputile,"%s\n", ((BookPointer)trie->endPointer)->title);
     
     int i;
@@ -229,10 +211,13 @@ void DisplayBooksByAuthor(TrieNodePointer trie, FILE *outputile)
         // if the node exists
         if((trie)->sons[i])
         {
+            // go further in the trie with a dfs approach
             DisplayBooksByAuthor(trie->sons[i], outputile);  
         }
     }
 }
+
+// display only a 'limit' amount of books from the author
 void DisplayBooksByAuthorLimit(TrieNodePointer trie, FILE *outputile,
                              int limit, int *current)
 {
@@ -256,6 +241,7 @@ void DisplayBooksByAuthorLimit(TrieNodePointer trie, FILE *outputile,
     }
 }
 
+// display only a 'limit' amount of authors from the authors trie
 void DisplayAuthorsLimit(TrieNodePointer trie, FILE *outputile,
                                 int limit, int *current, char *string)
 {
@@ -274,6 +260,7 @@ void DisplayAuthorsLimit(TrieNodePointer trie, FILE *outputile,
         // if the node exists
         if((trie)->sons[i])
         {
+            // we build the name of the author
             // create a new string and add the current char to it
             int len = strlen(string);
             string[len] = ALPHABET[i];
@@ -282,6 +269,7 @@ void DisplayAuthorsLimit(TrieNodePointer trie, FILE *outputile,
             DisplayAuthorsLimit(trie->sons[i], outputile, limit, current, string);  
             
             // delete the char we added previosly
+            // like in a backtracking approach
             string[len] = '\0';
         }
     }
@@ -302,11 +290,14 @@ void SearchBookMain(TrieNodePointer T1, FILE *inputFile, FILE *outputFile)
     if(title[strlen(title) - 1] == '~')
     {
         // we need to autocomplete
+
+        // delete the ~
         title[strlen(title) - 1] = '\0';
         AutoCompleteBooks(T1, title, outputFile);
     }
     else
     {
+        // no need to autocomplete
         SearchBook(title, T1, outputFile);
     }
     free(title);
@@ -343,6 +334,8 @@ BookPointer ReadBook(FILE *inputFile)
         nrPagString[strlen(nrPagString) - 1] = '\0';
     nrPag = atoi(nrPagString);
 
+
+    // initialise a new book
     BookPointer newBook = InitialiseBook(title, author, rating, nrPag);
     free(line);
 
@@ -357,6 +350,8 @@ void AutoCompleteBooks(TrieNodePointer node, char *key, FILE *outputFile)
 
     int i;
 
+
+    // go to the end node of the key
     for(i = 0; i < strlen(key); ++i)
     {
         int currIndex = GetIndexInAlphabet(key[i]);
@@ -371,6 +366,8 @@ void AutoCompleteBooks(TrieNodePointer node, char *key, FILE *outputFile)
     }
     // we reached the end of the prefix
     int current = 0;
+
+    // display with limit = 3
     DisplayBooksByAuthorLimit(pointerCrawl, outputFile, 3, &current);
 }
 
@@ -382,6 +379,7 @@ void AutoCompleteAuthors(TrieNodePointer node, char *key, FILE *outputFile)
 
     int i;
 
+    // go to the end node of the key
     for(i = 0; i < strlen(key); ++i)
     {
         int currIndex = GetIndexInAlphabet(key[i]);
@@ -396,6 +394,8 @@ void AutoCompleteAuthors(TrieNodePointer node, char *key, FILE *outputFile)
     }
     // we reached the end of the prefix
     int current = 0;
+
+    // display with limit = 3
     DisplayAuthorsLimit(pointerCrawl, outputFile, 3, &current, key);
 }
 
@@ -409,11 +409,6 @@ void SearchByAuthor(TrieNodePointer T2, FILE *inputFile, FILE *outputFile)
 
     if(line[strlen(line) - 1] == '\n')
         line[strlen(line) - 1] = '\0';
-
-    if(line[strlen(line) - 1] == '~')
-    {
-
-    }
 
     char *author, *title;
 
@@ -439,6 +434,7 @@ void SearchByAuthor(TrieNodePointer T2, FILE *inputFile, FILE *outputFile)
         if(title[strlen(title) - 1] == '~')
         {
             // autcompletion title
+
             // delete the ~
             title[strlen(title) - 1] = '\0';
             toAutoComplete = 1;
@@ -451,7 +447,7 @@ void SearchByAuthor(TrieNodePointer T2, FILE *inputFile, FILE *outputFile)
         {
             // search the book and display information
             if(toAutoComplete == 0)
-                SearchBook(title, currentBooks, outputFile);
+                SearchBook(title, currentBooks, outputFile); // no need to autocomplete
             else
                 AutoCompleteBooks(currentBooks, title, outputFile);
         }

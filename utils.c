@@ -1,5 +1,6 @@
 #include "utils.h"
 
+// get the position in the alphabet
 int GetIndexInAlphabet(char c)
 {
     int i;
