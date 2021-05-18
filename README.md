@@ -42,3 +42,8 @@ Astfel in:
     -   Functia care asigura prelucrarea comenzii 'delete_book' -> `DeleteBook()`
     -   Functie care sterge o carte din tria corespunzatoare 
     unui autor -> `RemoveBookFromAuthor()`
+
+*   `Book.c` -> se regaseste implementarea structurii de carte
+    -   Initializare -> `InitialiseBook()`
+    -   Cautare carte in T1 -> `SearchBook()`
+    -   Eliberare memorie carte -> `FreeBook()`

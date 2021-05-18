@@ -16,6 +16,6 @@ typedef struct book
 BookPointer InitialiseBook(char *title, char *author, int rating, int nrPag);
 void SearchBook(char *key, TrieNodePointer T1, FILE *outputFile);
 void FreeBook(void **info);
-void FreeAllBooks(BookPointer *books, int nrElem);
+
 
 #endif
