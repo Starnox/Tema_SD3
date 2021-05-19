@@ -1,3 +1,4 @@
+/* MIHAILESCU Eduard-Florin - 312CB */
 #include "Book.h"
 
 BookPointer InitialiseBook(char *title, char *author, int rating, int nrPag)

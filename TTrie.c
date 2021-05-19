@@ -1,3 +1,4 @@
+/* MIHAILESCU Eduard-Florin - 312CB */
 #include "TTrie.h"
 
 TrieNodePointer InitialiseTrieNode()

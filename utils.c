@@ -1,3 +1,4 @@
+/* MIHAILESCU Eduard-Florin - 312CB */
 #include "utils.h"
 
 // get the position in the alphabet

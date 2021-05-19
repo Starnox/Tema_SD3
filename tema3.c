@@ -1,3 +1,4 @@
+/* MIHAILESCU Eduard-Florin - 312CB */
 #include "tema3.h"
 
 int main(int argc, char *argv[])
